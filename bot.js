@@ -17,6 +17,8 @@ client.on('ready', () => {
 });
 
 client.on('message', msg => {
+  // Voice channel of user who sent message
+  const voiceChannel = msg.member.voiceChannel;
   // Use to differentiate emoji mappings for different servers
   let guildId = msg.guild.id;
 
@@ -45,8 +47,13 @@ client.on('message', msg => {
     }
   }
 
-  // Iterate through list of keys for server in database
-  // If match found, play sound clip
+  // TODO: Iterate through list of keys for server in database. If match found, play sound clip
+  if (msg.content === 'emoji' && voiceChannel) {
+    voiceChannel.join();
+    setTimeout(() => {
+      voiceChannel.leave();
+    }, 5000);
+  }
 });
 
 client.login(auth.token);
