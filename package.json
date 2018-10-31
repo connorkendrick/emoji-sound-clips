@@ -1,0 +1,11 @@
+{
+    "name": "oto",
+    "version": "1.0.0",
+    "description": "Maps sound clips to emojis",
+    "main": "bot.js",
+    "author": "Connor Kendrick",
+    "dependencies": {
+        "discord.js": "^11.4.2",
+        "winston": "^3.1.0"
+    }
+}
