@@ -57,33 +57,22 @@ client.on('message', msg => {
   // Bot should react differently when being messaged in a guild vs. in a DM
   if (msg.guild) {
     // Use to differentiate emoji mappings for different servers
-    let guildId = msg.guild.id;
+    const guildId = msg.guild.id;
     // Specific emoji to sound clip mapping
     // TODO cache in local memory so it doesn't have to query the database every msg?
-    let map = client.getMap.get(guildId + msg.content);
+    const map = client.getMap.get(guildId + msg.content);
     // Voice channel of user who sent message
     const voiceChannel = msg.member.voiceChannel;
 
     // Bot listens for messages that start with `!` for commands
     if (msg.content.substring(0, 1) === '!') {
-      let args = msg.content.substring(1).split(' ');
-      var cmd = args[0];
+      const args = msg.content.substring(1).split(' ');
+      const cmd = args[0];
 
       switch (cmd) {
         // Create new mapping of emoji and sound clip for server
         case 'otoadd':
-          // TODO: shorten
-          if (args.length === 5) {
-            m = {
-              id: guildId + args[1],
-              guildId: guildId,
-              emoji: args[1],
-              url: args[2],
-              startTime: args[3],
-              endTime: args[4]
-            }
-            client.addMap.run(m);
-          } else if (args.length === 3) {
+          if (args.length <= 5 && args.length >= 3) {
             m = {
               id: guildId + args[1],
               guildId: guildId,
@@ -92,6 +81,14 @@ client.on('message', msg => {
               startTime: '',
               endTime: ''
             }
+
+            if (args.length === 5) {
+              m.startTime = args[3];
+              m.endTime = args[4];
+            } else if (args.length === 4) {
+              m.startTime = args[3];
+            }
+
             client.addMap.run(m);
           }
           break;
@@ -107,14 +104,7 @@ client.on('message', msg => {
           if (guildMaps) {
             let rowInfo = ''
             for (let i = 0; i < guildMaps.length; i++) {
-              rowInfo += guildMaps[i].emoji;
-              rowInfo += ': ';
-              rowInfo += guildMaps[i].url;
-              rowInfo += '\t[';
-              rowInfo += guildMaps[i].startTime;
-              rowInfo += ' - ';
-              rowInfo += guildMaps[i].endTime;
-              rowInfo += ']\n'
+              rowInfo += guildMaps[i].emoji + ': ' + guildMaps[i].url + '\t[' + guildMaps[i].startTime + ' - ' + guildMaps[i].endTime + ']\n';
             }
             msg.channel.send(rowInfo);
           }
@@ -136,6 +126,7 @@ client.on('message', msg => {
       msg.channel.send(helpMessage);
     }
 
+    // Enter voice channel of user who sent valid mapped emoji
     if (map && voiceChannel && msg.content === map.emoji) {
       voiceChannel.join();
       setTimeout(() => {
@@ -144,7 +135,6 @@ client.on('message', msg => {
     }
   } else {
     if (msg.content === '!otohelp') {
-      // Display introduction and list of available commands
       msg.channel.send(helpMessage);
     } else {
       msg.channel.send('Type `!otohelp` for a list of commands!');
