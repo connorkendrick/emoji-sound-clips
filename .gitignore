@@ -63,3 +63,5 @@ typings/
 # Token
 auth.json
 
+# better-sqlite3 files
+*.sqlite*
