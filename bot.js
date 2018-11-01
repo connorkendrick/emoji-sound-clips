@@ -39,20 +39,20 @@ client.on('guildCreate', guild => {
   console.log('Hello, I\'m Oto! Type !otohelp or @ me for a list of commands!');
 });
 
+// Help message sent when requested
+const helpMessage = 'Hello! I\'m Oto, a bot to map sound clips to emojis!\n\n' +
+'Here\'s a list of commands you can give me:\n' +
+'`!otoadd [emoji] [YouTube URL] [startTime (optional)] [endTime (optional)]`: map sound clip to emoji\n' +
+'`!otoremove [emoji]`: remove mapping of sound clip to emoji\n' +
+'`!otolist`: list all emoji to sound clip mappings\n' +
+'`!otodisconnect`: manually remove me from a voice channel' +
+'`!otohelp`: list available commands';
+
 client.on('message', msg => {
   // Don't read messages from bots
   if (msg.author.bot) {
     return;
   }
-
-  // Help message sent when requested
-  const helpMessage = 'Hello! I\'m Oto, a bot to map sound clips to emojis!\n\n' +
-                      'Here\'s a list of commands you can give me:\n' +
-                      '`!otoadd`: map sound clip to emoji\n' +
-                      '`!otoremove`: remove mapping of sound clip to emoji\n' +
-                      '`!otolist`: list all emoji to sound clip mappings\n' +
-                      '`!otodisconnect`: manually remove me from a voice channel' +
-                      '`!otohelp`: list available commands';
 
   // Bot should react differently when being messaged in a guild vs. in a DM
   if (msg.guild) {
@@ -72,21 +72,58 @@ client.on('message', msg => {
       switch (cmd) {
         // Create new mapping of emoji and sound clip for server
         case 'otoadd':
-          msg.channel.send('Command to map a sound to an emoji');
-          // create map object, m
-          // client.addMap.run(m);
+          // TODO: shorten
+          if (args.length === 5) {
+            m = {
+              id: guildId + args[1],
+              guildId: guildId,
+              emoji: args[1],
+              url: args[2],
+              startTime: args[3],
+              endTime: args[4]
+            }
+            client.addMap.run(m);
+          } else if (args.length === 3) {
+            m = {
+              id: guildId + args[1],
+              guildId: guildId,
+              emoji: args[1],
+              url: args[2],
+              startTime: '',
+              endTime: ''
+            }
+            client.addMap.run(m);
+          }
           break;
         // Remove mapping of emoji and sound clip for server
         case 'otoremove':
-          msg.channel.send('Command to remove a mapped emoji from the map')
+          if (args.length === 2) {
+            client.removeMap.run(args[1]);
+          }
           break;
         // List all current mappings for server
         case 'otolist':
-          msg.channel.send('Command to list every key and value in map')
+          const guildMaps = client.getGuildMaps.all(guildId);
+          if (guildMaps) {
+            let rowInfo = ''
+            for (let i = 0; i < guildMaps.length; i++) {
+              rowInfo += guildMaps[i].emoji;
+              rowInfo += ': ';
+              rowInfo += guildMaps[i].url;
+              rowInfo += '\t[';
+              rowInfo += guildMaps[i].startTime;
+              rowInfo += ' - ';
+              rowInfo += guildMaps[i].endTime;
+              rowInfo += ']\n'
+            }
+            msg.channel.send(rowInfo);
+          }
           break;
         // Force bot to disconnect from voice channel
         case 'otodisconnect':
-          msg.channel.send('Command to make bot leave voice channel manually');
+          if (voiceChannel) {
+            voiceChannel.leave();
+          }
           break;
         case 'otohelp':
           msg.channel.send(helpMessage);
@@ -108,13 +145,7 @@ client.on('message', msg => {
   } else {
     if (msg.content === '!otohelp') {
       // Display introduction and list of available commands
-      // TODO: Update commands to include parameters
-      msg.channel.send('Hello! I\'m Oto, a bot to map sound clips to emojis!\n\n' +
-                        'Here\'s a list of commands you can give me:\n' +
-                        '`!otoadd`: map sound clip to emoji\n' +
-                        '`!otoremove`: remove mapping of sound clip to emoji\n' +
-                        '`!otolist`: list all emoji to sound clip mappings\n' +
-                        '`!otodisconnect`: manually remove me from a voice channel');
+      msg.channel.send(helpMessage);
     } else {
       msg.channel.send('Type `!otohelp` for a list of commands!');
     }
